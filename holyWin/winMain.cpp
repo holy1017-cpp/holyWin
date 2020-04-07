@@ -1,4 +1,4 @@
-// 单胶农砰 局敲府纳捞记
+// 单胶农砰 局敲府纳捞记.
 #include <windows.h>
 
 #define ID_OK_BTN	2000
