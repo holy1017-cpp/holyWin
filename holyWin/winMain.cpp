@@ -1,15 +1,22 @@
 // 데스크톱 애플리케이션.
 #include <windows.h>
+#include <stdio.h>
 
 #define ID_OK_BTN	2000
 
 HINSTANCE g_hInst; // 핸들
 LPCTSTR lpszClass = L"HelloAPI";
 LPCTSTR ChildClassName = L"ChildWin";
+LPCTSTR ChildClassName2 = L"ChildWin2";
 
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK ChildWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+void main(int argc, char** argv)
+{
+	printf("HELLO CONSOLE WINDOW!!!");
+}
 
 // 메인 진입
 int APIENTRY WinMain(HINSTANCE hInstance,
@@ -28,7 +35,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	WndClass.hCursor = LoadCursor(NULL, IDC_ARROW);// 커서
 	WndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);// 아이콘
 	WndClass.hInstance = hInstance;// 핸들
-	WndClass.lpfnWndProc = (WNDPROC)WndProc;
+	WndClass.lpfnWndProc = (WNDPROC)WndProc; // 프로시져
 	WndClass.lpszClassName = lpszClass; // 윈도우 타이틀 이름
 	WndClass.lpszMenuName = NULL; // 메뉴 지정
 	WndClass.style = CS_HREDRAW | CS_VREDRAW;
@@ -36,6 +43,10 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	WndClass.lpfnWndProc = ChildWndProc;      //차일드 윈도우 프로시저
 	WndClass.lpszClassName = ChildClassName; //차일드 윈도우 클래스이름
+	RegisterClass(&WndClass);
+
+	WndClass.lpfnWndProc = ChildWndProc;      //차일드 윈도우 프로시저
+	WndClass.lpszClassName = ChildClassName2; //차일드 윈도우 클래스이름
 	RegisterClass(&WndClass);
 
 	// 윈도우 생성
@@ -61,8 +72,8 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	hWnd2 = CreateWindow(lpszClass,			//윈도우클래스 이름
 		L"윈도우 프로그래밍",			    //윈도우타이틀
-		WS_OVERLAPPEDWINDOW | WS_VISIBLE,   //윈도우스타일
-		200, 200,							//윈도우가 보일때 X Y좌표
+		WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL,   //윈도우스타일
+		100, 100,							//윈도우가 보일때 X Y좌표
 		600, 600,							//윈도우의 폭과 높이				
 		(HWND)NULL,							//부모윈도우 핸들
 		(HMENU)NULL,						//윈도우가 가지는 메뉴핸들
@@ -72,20 +83,36 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	ShowWindow(hWnd, nCmdShow);		//보여줌
 	ShowWindow(hWnd2, nCmdShow);		//보여줌
 
+	// 콘솔 띄우기, 로그 찍기위해 사용함
+	AllocConsole();
+	FILE* fpstdin = stdin, * fpstdout = stdout, * fpstderr = stderr;
+	//freopen("CONOUT$", "w+", stdout);
+	freopen_s(&fpstdin, "CONIN$", "r", stdin);
+	freopen_s(&fpstdout, "CONOUT$", "w", stdout);
+	freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+
 	// 반복적으로 윈도우 표시
+	// WM_QUIT 인 경우 false
 	while (GetMessage(&Message, 0, 0, 0)) {
 		TranslateMessage(&Message);
 		DispatchMessage(&Message);
+		printf("%d , %d\n", Message.pt.x, Message.pt.y);
 	}
 	return Message.wParam;
 }
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage,
-	WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage,	WPARAM wParam, LPARAM lParam)
 {
 	LPCTSTR text = L"메인윈도우 생성";
 	switch (iMessage) {
-	case WM_PAINT:
+	case WM_LBUTTONDOWN://마우스 좌측버튼
+	{
+	}
+	case WM_CHAR:// 문자 입력 받을때
+	{
+
+	}
+	case WM_PAINT://다시 화면 그릴때
 	{
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
@@ -93,7 +120,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage,
 		EndPaint(hWnd, &ps);
 		return 0;
 	}
-	case WM_CREATE:
+	case WM_CREATE://처음 만들대
 	{
 		HWND hChildWnd = CreateWindow(
 			ChildClassName,     		// 차일드 윈도우 클래스 이름 
@@ -106,9 +133,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage,
 			hWnd,         		// 부모 윈도우
 			(HMENU)1000,        	// 차일드 윈도우ID 
 			g_hInst,           		// 인스턴스 핸들 
+			(LPVOID)NULL);      	// 여분의 데이터					
+		
+		HWND hChildWnd2 = CreateWindow(
+			ChildClassName2,     		// 차일드 윈도우 클래스 이름 
+			L"차일드 윈도우2",            	// 윈도우 타이틀 
+			WS_OVERLAPPEDWINDOW | WS_CHILD,  // 윈도우  스타일 
+			100,       		// 윈도우 보일 때 x 좌표 
+			100,       		// 윈도우 보일 때 y 좌표 
+			260,       		// 윈도우 폭
+			200,       		// 윈도우 높이
+			hWnd,         		// 부모 윈도우
+			(HMENU)1001,        	// 차일드 윈도우ID 
+			g_hInst,           		// 인스턴스 핸들 
 			(LPVOID)NULL);      	// 여분의 데이터			
 
 		ShowWindow(hChildWnd, SW_SHOW);
+		ShowWindow(hChildWnd2, SW_SHOW);
 
 		hChildWnd = CreateWindow(
 			L"button",        		// 윈도우 클래스 이름 
@@ -135,7 +176,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage,
 
 		return 0;
 	}
-	case WM_DESTROY:
+	case WM_DESTROY://메모리에서 파괴될때
 		PostQuitMessage(0);
 		return 0;
 	}
