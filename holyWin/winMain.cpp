@@ -43,6 +43,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 	WndClass.lpfnWndProc = ChildWndProc;      //차일드 윈도우 프로시저
 	WndClass.lpszClassName = ChildClassName; //차일드 윈도우 클래스이름
+	WndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);//배경색 브러시
 	RegisterClass(&WndClass);
 
 	WndClass.lpfnWndProc = ChildWndProc;      //차일드 윈도우 프로시저
@@ -90,27 +91,43 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	freopen_s(&fpstdin, "CONIN$", "r", stdin);
 	freopen_s(&fpstdout, "CONOUT$", "w", stdout);
 	freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+	
+	//printf("hWnd:%p \n", hWnd);
+	//printf("hWnd:%p \n", hWnd2);
 
 	// 반복적으로 윈도우 표시
 	// WM_QUIT 인 경우 false
 	while (GetMessage(&Message, 0, 0, 0)) {
 		TranslateMessage(&Message);
 		DispatchMessage(&Message);
-		printf("%d , %d\n", Message.pt.x, Message.pt.y);
+		//printf("%d , %d\n", Message.pt.x, Message.pt.y);
 	}
+
+	OutputDebugString(L"종료\n");
 	return Message.wParam;
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage,	WPARAM wParam, LPARAM lParam)
 {
+	if (iMessage != WM_MOUSEMOVE) {
+		printf("hWnd:%p , iMessage:%04X , wParam:%d , lParam:%d\n", hWnd, iMessage, wParam, lParam);
+	}
 	LPCTSTR text = L"메인윈도우 생성";
 	switch (iMessage) {
+	case WM_MOUSEMOVE://마우스 좌측버튼
+	{
+		//OutputDebugString(L"WM_MOUSEMOVE\n");
+		//printf("WM_MOUSEMOVE\n");
+	}
 	case WM_LBUTTONDOWN://마우스 좌측버튼
 	{
+		//OutputDebugString(L"WM_LBUTTONDOWN\n");
+		//printf("WM_LBUTTONDOWN\n");
 	}
 	case WM_CHAR:// 문자 입력 받을때
 	{
-
+		//OutputDebugString(L"WM_CHAR\n");
+		//printf("WM_CHAR\n");
 	}
 	case WM_PAINT://다시 화면 그릴때
 	{
